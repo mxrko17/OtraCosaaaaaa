@@ -27,7 +27,6 @@ public class Empresa {
         return buses.toArray(new Bus[0]);
     }
 
-    // Retorna verdadero si puede realizarse la acción, falso en caso contrario
     public boolean addConductor(idPersona id, Nombre nom, Direccion dir) {
         for (Tripulante t : tripulantes) {
             if (t.getIdPersona().equals(id)) return false;
@@ -37,7 +36,6 @@ public class Empresa {
         return true;
     }
 
-    // Retorna verdadero si puede realizarse la acción, falso en caso contrario
     public boolean addAuxiliar(idPersona id, Nombre nom, Direccion dir) {
         for (Tripulante t : tripulantes) {
             if (t.getIdPersona().equals(id)) return false;
@@ -47,12 +45,10 @@ public class Empresa {
         return true;
     }
 
-    // Retorna un arreglo unidimensional con todos los tripulantes
     public Tripulante[] getTripulantes() {
         return tripulantes.toArray(new Tripulante[0]);
     }
 
-    // Retorna un arreglo unidimensional con todas las ventas asociadas a la empresa
     public Venta[] getVentas() {
         ArrayList<Venta> ventasEmpresa = new ArrayList<>();
         for (Bus b : buses) {

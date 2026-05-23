@@ -26,17 +26,22 @@ public class SistemaVentaPasajes {
     }
 
     public void createCliente(idPersona id, Nombre nom, String fono, String email) {
-        if (findCliente(id).isEmpty()) {
-            Cliente nuevo = new Cliente(id, nom, email);
-            nuevo.setTelefono(fono);
-            clientes.add(nuevo);
+        // Verificamos si el cliente YA está presente
+        if (findCliente(id).isPresent()) {
+            throw new excepciones.SistemaVentaPasajesException("Ya existe cliente con el id indicado");
         }
+
+        // Si no existe, procedemos a crearlo normalmente
+        Cliente nuevo = new Cliente(id, nom, email);
+        nuevo.setTelefono(fono);
+        clientes.add(nuevo);
     }
 
     public void createPasajero(idPersona id, Nombre nom, String fono, Nombre nomContacto, String fonoContacto) {
-        if (findPasajero(id).isEmpty()) {
-            pasajeros.add(new Pasajero(id, nom, fono, nomContacto, fonoContacto));
+        if (findPasajero(id).isPresent()) {
+            throw new excepciones.SistemaVentaPasajesException("Ya existe pasajero con el id indicado");
         }
+        pasajeros.add(new Pasajero(id, nom, fono, nomContacto, fonoContacto));
     }
 
     public void createViaje(Date fecha, Time hora, int precio, int duracion, String patBus, idPersona[] idTripulantes, String[] nomComunas) {
@@ -61,7 +66,7 @@ public class SistemaVentaPasajes {
             throw new excepciones.SistemaVentaPasajesException("No existe auxiliar con el id indicado en la empresa con el rut indicado"); //
         }
 
-        // 4. Validar conductor 1
+        // 4. Validar conductor
         Optional<Conductor> condOpt = ctrl.findConductor(idTripulantes[1], rutEmpresa);
         if (!condOpt.isPresent()) {
             throw new excepciones.SistemaVentaPasajesException("No existe conductor con el id indicado en la empresa con el rut indicado"); //
@@ -79,7 +84,7 @@ public class SistemaVentaPasajes {
             throw new excepciones.SistemaVentaPasajesException("No existe terminal de llegada en la comuna indicada"); //
         }
 
-        // Si todo es correcto, crear el viaje
+        // Si esta correcto, crea el viaje
         Viaje nuevoViaje = new Viaje(fecha, hora, precio, duracion, bus, auxOpt.get(), condOpt.get(), termSalidaOpt.get(), termLlegadaOpt.get());
 
         // Agregar conductor 2 si el arreglo tiene un tercer elemento válido
@@ -92,7 +97,7 @@ public class SistemaVentaPasajes {
     }
 
     public void iniciaVenta(String idDoc, TipoDocumento tipo, Date fechaViaje, String comSalida, String comLlegada, idPersona idCliente, int nroPasajes) {
-        // 1. Validar si ya existe la venta
+        // 1. Validar si existe la venta
         if (findVenta(idDoc, tipo).isPresent()) {
             throw new excepciones.SistemaVentaPasajesException("Ya existe venta con el id y tipo de documento indicados");
         }
@@ -103,13 +108,13 @@ public class SistemaVentaPasajes {
             throw new excepciones.SistemaVentaPasajesException("No existe cliente con id indicado");
         }
 
-        // 3. Validar disponibilidad (Aquí se usa el "10/06/2026" ingresado por el usuario)
+        // 3. Validar la disponibilidad
         String[][] horarios = getHorariosDisponibles(fechaViaje, comSalida, comLlegada, nroPasajes);
         if (horarios.length == 0) {
             throw new excepciones.SistemaVentaPasajesException("No existen viajes disponibles en la fecha y con terminales en las comunas de salida y llegada indicados");
         }
 
-        // 4. Crear la venta (Aquí usamos new Date() para cumplir con usar la fecha actual del sistema )
+        // 4. Creaamo la venta (Aqui usamos new Date() para cumplir con usar la fecha actual del sistema )
         ventas.add(new Venta(idDoc, tipo, new Date(), cliente.get()));
     }
 
@@ -153,20 +158,43 @@ public class SistemaVentaPasajes {
 
     public void vendePasaje(String idDoc, TipoDocumento tipo, Date fechaViaje, Time hora, String patBus, int asiento, idPersona idPasajero) {
         Optional<Venta> venta = findVenta(idDoc, tipo);
-        Optional<Viaje> viaje = findViaje(fechaViaje, hora, patBus);
-        Optional<Pasajero> pasajero = findPasajero(idPasajero);
-
-        if (venta.isPresent() && viaje.isPresent() && pasajero.isPresent()) {
-            venta.get().createPasaje(asiento, viaje.get(), pasajero.get());
+        if (!venta.isPresent()) {
+            throw new excepciones.SistemaVentaPasajesException("No existe venta con el id y tipo de documento indicados");
         }
+
+        Optional<Pasajero> pasajero = findPasajero(idPasajero);
+        if (!pasajero.isPresent()) {
+            throw new excepciones.SistemaVentaPasajesException("No existe pasajero con el id indicado");
+        }
+
+        Optional<Viaje> viaje = findViaje(fechaViaje, hora, patBus);
+        if (!viaje.isPresent()) {
+            throw new excepciones.SistemaVentaPasajesException("No existe viaje con la fecha, hora y patente de bus indicados");
+        }
+
+        venta.get().createPasaje(asiento, viaje.get(), pasajero.get());
     }
 
     public void pagaVenta(String idDocumento, TipoDocumento tipo) {
-        findVenta(idDocumento, tipo).ifPresent(Venta::pagaMonto);
+        Optional<Venta> venta = findVenta(idDocumento, tipo);
+        if (!venta.isPresent()) {
+            throw new excepciones.SistemaVentaPasajesException("No existe venta con el id y tipo de documento indicados");
+        }
+
+        if (!venta.get().pagaMonto()) {
+            throw new excepciones.SistemaVentaPasajesException("La venta ya fue pagada");
+        }
     }
 
     public void pagaVenta(String idDocumento, TipoDocumento tipo, long nroTarjeta) {
-        findVenta(idDocumento, tipo).ifPresent(v -> v.pagaMonto(nroTarjeta));
+        Optional<Venta> venta = findVenta(idDocumento, tipo);
+        if (!venta.isPresent()) {
+            throw new excepciones.SistemaVentaPasajesException("No existe venta con el id y tipo de documento indicados");
+        }
+
+        if (!venta.get().pagaMonto(nroTarjeta)) {
+            throw new excepciones.SistemaVentaPasajesException("La venta ya fue pagada");
+        }
     }
 
     public String[][] listVentas() {
@@ -175,11 +203,11 @@ public class SistemaVentaPasajes {
 
         for (int i = 0; i < ventas.size(); i++) {
             datos[i][0] = ventas.get(i).getIdDocumento();
-            // Convertimos el tipo a minúscula como en las otras tablas
+
             datos[i][1] = ventas.get(i).getTipo().toString().toLowerCase();
-            // Aplicamos el formato corto de fecha
+
             datos[i][2] = dfFecha.format(ventas.get(i).getFecha());
-            // Formateamos el monto con el separador de miles
+
             datos[i][3] = String.format("%,d", ventas.get(i).getMontoPagado()).replace(',', '.');
         }
         return datos;
@@ -225,7 +253,10 @@ public class SistemaVentaPasajes {
 
     public String[][] listPasajerosViaje(Date fecha, Time hora, String patenteBus) {
         Optional<Viaje> v = findViaje(fecha, hora, patenteBus);
-        return v.isPresent() ? v.get().getListaPasajeros() : new String[0][0];
+        if (!v.isPresent()) {
+            throw new excepciones.SistemaVentaPasajesException("No existe viaje con la fecha, hora y patente de bus indicados");
+        }
+        return v.get().getListaPasajeros();
     }
 
     private Optional<Cliente> findCliente(idPersona id) {

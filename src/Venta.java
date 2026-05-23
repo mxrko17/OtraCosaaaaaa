@@ -7,7 +7,7 @@ public class Venta {
     private Date fecha;
     private Cliente cliente;
     private ArrayList<Pasaje> pasajes;
-    private Pago pago; // Asociación 0..1
+    private Pago pago;
 
     // Inicialmente la venta no tiene pago asociado
     public Venta(String idDoc, TipoDocumento tipo, Date fec, Cliente cli) {
@@ -46,12 +46,10 @@ public class Venta {
         this.pasajes.add(nuevoPasaje);
     }
 
-    // Retorna el monto pagao, si la venta tiene un pago asociado, de lo contrario retorna cero
     public int getMontoPagado() {
         return (pago != null) ? pago.getMonto() : 0;
     }
 
-    // Crea un pago efectivo siempre que no se haya pagado aún
     public boolean pagaMonto() {
         if (this.pago != null) {
             return false;
@@ -60,7 +58,6 @@ public class Venta {
         return true;
     }
 
-    // Crea un pago con tarjeta siempre que no se haya pagado aún
     public boolean pagaMonto(long nroTarjeta) {
         if (this.pago != null) {
             return false;
@@ -69,7 +66,6 @@ public class Venta {
         return true;
     }
 
-    // Informa el tipo de pago, si tiene un pago asociado, de lo contrario retorna null
     public String getTipoPago() {
         if (pago instanceof PagoEfectivo) {
             return "Pago Efectivo";

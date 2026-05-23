@@ -1,6 +1,5 @@
 import java.util.ArrayList;
 
-// Se ajusta la creación de buses para asociarlos a la empresa a la que pertenecen
 public class Bus {
     private String patente;
     private String marca;
@@ -10,7 +9,6 @@ public class Bus {
     private ArrayList<Viaje> viajes;
 
     public Bus(String patente, int nroAsientos, Empresa emp) {
-        // Restricción: patente debe ser alfanumérica y permitir guiones
         if (!patente.matches("^[a-zA-Z0-9-]+$")) {
             throw new IllegalArgumentException("La patente debe ser alfanumérica (puede incluir guiones).");
         }
