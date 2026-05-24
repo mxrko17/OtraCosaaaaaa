@@ -163,21 +163,40 @@ public class ControladorEmpresas {
     }
 
     protected Optional<Empresa> findEmpresa(Rut rut) {
-        return empresas.stream().filter(e -> e.getRut().equals(rut)).findFirst();
+        for (int i = 0; i < empresas.size(); i++) {
+            if (empresas.get(i).getRut().equals(rut)) {
+                return Optional.of(empresas.get(i));
+            }
+        }
+        return Optional.empty();
     }
 
     protected Optional<Terminal> findTerminal(String nombre) {
-        return terminales.stream().filter(t -> t.getNombre().equalsIgnoreCase(nombre)).findFirst();
+        for (int i = 0; i < terminales.size(); i++) {
+            if (terminales.get(i).getNombre().equalsIgnoreCase(nombre)) {
+                return Optional.of(terminales.get(i));
+            }
+        }
+        return Optional.empty();
     }
 
     protected Optional<Terminal> findTerminalPorComuna(String comuna) {
-        return terminales.stream().filter(t -> t.getDireccion().getComuna().equalsIgnoreCase(comuna)).findFirst();
+        for (int i = 0; i < terminales.size(); i++) {
+            if (terminales.get(i).getDireccion().getComuna().equalsIgnoreCase(comuna)) {
+                return Optional.of(terminales.get(i));
+            }
+        }
+        return Optional.empty();
     }
 
     protected Optional<Bus> findBus(String patente) {
-        for (Empresa e : empresas) {
-            for (Bus b : e.getBuses()) {
-                if (b.getPatente().equalsIgnoreCase(patente)) return Optional.of(b);
+        for (int i = 0; i < empresas.size(); i++) {
+            Empresa e = empresas.get(i);
+            Bus[] busesEmpresa = e.getBuses();
+            for (int j = 0; j < busesEmpresa.length; j++) {
+                if (busesEmpresa[j].getPatente().equalsIgnoreCase(patente)) {
+                    return Optional.of(busesEmpresa[j]);
+                }
             }
         }
         return Optional.empty();
@@ -186,8 +205,11 @@ public class ControladorEmpresas {
     protected Optional<Conductor> findConductor(idPersona id, Rut rutEmpresa) {
         Optional<Empresa> emp = findEmpresa(rutEmpresa);
         if (emp.isPresent()) {
-            for (Tripulante t : emp.get().getTripulantes()) {
-                if (t instanceof Conductor && t.getIdPersona().equals(id)) return Optional.of((Conductor) t);
+            Tripulante[] tripulantes = emp.get().getTripulantes();
+            for (int i = 0; i < tripulantes.length; i++) {
+                if (tripulantes[i] instanceof Conductor && tripulantes[i].getIdPersona().equals(id)) {
+                    return Optional.of((Conductor) tripulantes[i]);
+                }
             }
         }
         return Optional.empty();
@@ -196,8 +218,11 @@ public class ControladorEmpresas {
     protected Optional<Auxiliar> findAuxiliar(idPersona id, Rut rutEmpresa) {
         Optional<Empresa> emp = findEmpresa(rutEmpresa);
         if (emp.isPresent()) {
-            for (Tripulante t : emp.get().getTripulantes()) {
-                if (t instanceof Auxiliar && t.getIdPersona().equals(id)) return Optional.of((Auxiliar) t);
+            Tripulante[] tripulantes = emp.get().getTripulantes();
+            for (int i = 0; i < tripulantes.length; i++) {
+                if (tripulantes[i] instanceof Auxiliar && tripulantes[i].getIdPersona().equals(id)) {
+                    return Optional.of((Auxiliar) tripulantes[i]);
+                }
             }
         }
         return Optional.empty();

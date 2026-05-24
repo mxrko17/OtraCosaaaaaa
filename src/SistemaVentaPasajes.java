@@ -260,18 +260,40 @@ public class SistemaVentaPasajes {
     }
 
     private Optional<Cliente> findCliente(idPersona id) {
-        return clientes.stream().filter(c -> c.getIdPersona().equals(id)).findFirst();
+        for (int i = 0; i < clientes.size(); i++) {
+            if (clientes.get(i).getIdPersona().equals(id)) {
+                return Optional.of(clientes.get(i));
+            }
+        }
+        return Optional.empty();
     }
 
     private Optional<Venta> findVenta(String idDocumento, TipoDocumento tipoDocumento) {
-        return ventas.stream().filter(v -> v.getIdDocumento().equals(idDocumento) && v.getTipo().equals(tipoDocumento)).findFirst();
+        for (int i = 0; i < ventas.size(); i++) {
+            if (ventas.get(i).getIdDocumento().equals(idDocumento) && ventas.get(i).getTipo().equals(tipoDocumento)) {
+                return Optional.of(ventas.get(i));
+            }
+        }
+        return Optional.empty();
     }
 
     private Optional<Viaje> findViaje(Date fecha, Time hora, String patenteBus) {
-        return viajes.stream().filter(v -> v.getFecha().equals(fecha) && v.getHora().equals(hora) && v.getBus().getPatente().equals(patenteBus)).findFirst();
+        for (int i = 0; i < viajes.size(); i++) {
+            if (viajes.get(i).getFecha().equals(fecha) &&
+                    viajes.get(i).getHora().equals(hora) &&
+                    viajes.get(i).getBus().getPatente().equals(patenteBus)) {
+                return Optional.of(viajes.get(i));
+            }
+        }
+        return Optional.empty();
     }
 
     private Optional<Pasajero> findPasajero(idPersona idPersona) {
-        return pasajeros.stream().filter(p -> p.getIdPersona().equals(idPersona)).findFirst();
+        for (int i = 0; i < pasajeros.size(); i++) {
+            if (pasajeros.get(i).getIdPersona().equals(idPersona)) {
+                return Optional.of(pasajeros.get(i));
+            }
+        }
+        return Optional.empty();
     }
 }
